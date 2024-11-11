@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Galería de Imágenes</title>
+  </head>
+  <body style="background-color: peachpuff">
+    <h1>Galería de Imágenes</h1>
+    <button id="createEntry" style="margin-bottom: 24px">Nueva entrada</button>
+
+    <table border="collapse">
+      <thead>
+        <tr>
+          <th>ID del Registro</th>
+          <th>ID del Álbum</th>
+          <th>Título del Álbum</th>
+          <th>Imagen Principal</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="tabla-imagenes"></tbody>
+    </table>
+
+    <script>
+      function showTableContent(jsonData) {
+        const tabla = document.getElementById("tabla-imagenes");
+
+        jsonData?.forEach((item) => {
+          const fila = document.createElement("tr");
+          fila?.setAttribute("id", `fila_${item?.id}`);
+
+          const celdaIdRegistro = document.createElement("td");
+          celdaIdRegistro.textContent = item.id;
+          fila.appendChild(celdaIdRegistro);
+
+          const celdaIdAlbum = document.createElement("td");
+          celdaIdAlbum.textContent = item.albumId;
+          fila.appendChild(celdaIdAlbum);
+
+          const celdaTitulo = document.createElement("td");
+          celdaTitulo.textContent = item.title;
+          fila.appendChild(celdaTitulo);
+
+          const celdaImagen = document.createElement("td");
+          const imagen = document.createElement("img");
+          imagen.src = item.thumbnailUrl;
+          imagen.alt = item.title;
+          imagen.width = 150;
+          imagen.height = 150;
+          imagen.loading = "lazy";
+
+          celdaImagen.appendChild(imagen);
+          fila.appendChild(celdaImagen);
+
+          const celdaAction = document.createElement("td");
+          const deleteButton = document.createElement("button");
+
+          deleteButton.textContent = "Borrar";
+
+          deleteButton.addEventListener("click", function () {
+            console.log("delete", item?.id);
+            borrarRegistro(item?.id);
+          });
+
+          celdaAction.appendChild(deleteButton);
+          fila.appendChild(celdaAction);
+
+          tabla.appendChild(fila);
+        });
+      }
+
+      function obtenerImagenes() {
+        fetch("https://jsonplaceholder.typicode.com/photos?_limit=20")
+          .then((response) => response.json())
+          .then((jsonData) => {
+             createEntry.addEventListener("click", function () {
+              crearRegistro(jsonData);
+            });
+            
+            showTableContent(jsonData);
+          })
+          .catch((error) =>
+            console.error("Error al obtener las imágenes:", error)
+          );
+      }
+
+      function borrarRegistro(id) {
+        fetch(`https://jsonplaceholder.typicode.com/photos/${id}`, {
+          method: "DELETE",
+        })
+          .then((response) => {
+            console.log("Response de borrar el resgistro", id, ":", response);
+
+            const tabla = document.getElementById("tabla-imagenes");
+            const filaABorrar = document?.getElementById(`fila_${id}`);
+
+            if (!!filaABorrar && !!tabla) {
+              tabla.removeChild(filaABorrar);
+            }
+          })
+
+          .catch((error) =>
+            console.error("Error al borrar el registro:", error)
+          );
+      }
+
+      function crearRegistro(jsonData) {
+        const newItem = {
+          albumId: 1,
+          thumbnail: null,
+          title: "Laura",
+          url: "https://cursos.com/wp-content/uploads/2021/04/academia-tokio-school.jpg",
+        }
+
+        fetch(`https://jsonplaceholder.typicode.com/photos`, {
+          method: "POST",
+          body: JSON.stringify(newItem),
+          headers: {
+            "Content-type": "application/json; charset=UTF-8",
+          },
+        })
+          .then((response) => {
+            const listaActualizada = jsonData?.push(newItem)
+            console.log("Resultado de la inclusión del resgistro", ":", response , 'en la lista:', jsonData);
+          })
+
+          .catch((error) =>
+            console.error("Error al crear el registro:", error)
+          );
+      }
+
+      obtenerImagenes();
+
+     
+
+
+    </script>
+  </body>
+</html>
